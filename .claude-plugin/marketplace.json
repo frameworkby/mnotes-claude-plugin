@@ -1,8 +1,17 @@
 {
+  "name": "mnotes",
+  "owner": {
+    "name": "frameworkby"
+  },
+  "description": "m-notes Claude Code plugin marketplace",
   "plugins": [
     {
       "name": "mnotes",
-      "source": "https://github.com/frameworkby/mnotes-claude-plugin"
+      "source": "./",
+      "description": "m-notes knowledge-base integration: hooks, /mnotes:store, /mnotes:recall, /mnotes:setup, knowledge-manager agent",
+      "homepage": "https://github.com/frameworkby/mnotes-claude-plugin",
+      "repository": "https://github.com/frameworkby/mnotes-claude-plugin",
+      "license": "MIT"
     }
   ]
 }
