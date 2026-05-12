@@ -6,12 +6,9 @@ Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Cla
 
 ## Install
 
-```bash
-# Add this marketplace (one-time per machine)
-gh marketplace add https://github.com/frameworkby/mnotes-claude-plugin
-
-# Install the plugin in a project
-claude plugin install mnotes
+```
+/plugin marketplace add frameworkby/mnotes-claude-plugin
+/plugin install mnotes@mnotes
 ```
 
 ---

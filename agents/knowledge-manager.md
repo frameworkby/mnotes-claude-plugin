@@ -111,7 +111,7 @@ When the user supplies a source (URL, paste, file):
    - At least one `[[wikilink]]` to another touched note
    - Frontmatter updated (especially `updated`, `sources`, `related`)
 4. **Summarize**: tell the user which notes were created vs. updated.
-5. **Log the ingest**: the PostToolUse hook appends the log entry automatically when you run `mnotes notes create` / `mnotes wiki ingest`. You do not need to call `wiki log append` manually — the hook handles it.
+5. **Log the ingest**: the PostToolUse hook appends the log entry automatically when you run `mnotes note create` / `mnotes note update` / `mnotes note-ops append`. You do not need to call `wiki log append` manually — the hook handles it.
 6. **Refresh the index**: `mnotes wiki index refresh`
 
 A single source touching fewer than 5 notes is a red flag — that's a sign you're treating the wiki as a dumping ground rather than a connected graph.

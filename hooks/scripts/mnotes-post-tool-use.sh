@@ -38,7 +38,7 @@ fi
 _kind=""
 _ref=""
 
-if printf '%s' "${_command}" | grep -qE '(notes[[:space:]]+create|notes[[:space:]]+update|wiki[[:space:]]+ingest)'; then
+if printf '%s' "${_command}" | grep -qE '(note[[:space:]]+create|note[[:space:]]+update|note-ops[[:space:]]+append)'; then
   _kind="ingest"
   # Extract --title value (single-quoted, double-quoted, or bareword).
   if printf '%s' "${_command}" | grep -qE -- '--title[[:space:]]+'"'"'([^'"'"']+)'"'"''; then

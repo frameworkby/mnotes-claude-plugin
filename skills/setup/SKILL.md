@@ -30,7 +30,7 @@ ls ~/.mnotes/config.json
 If the file does not exist, authenticate:
 
 ```bash
-mnotes auth login
+mnotes login
 ```
 
 Ask the user for their m-notes API URL and API key. Pass them when prompted or via environment variables `MNOTES_API_URL` and `MNOTES_API_KEY`.
@@ -55,18 +55,9 @@ Run this inside the current project directory to bind it:
 mnotes workspace link
 ```
 
-### 5. Bootstrap wiki structure
-
-```bash
-mnotes wiki bootstrap
-```
-
-If that command is not available, fall back to creating the index and log notes manually:
-
-```bash
-mnotes note create --title "wiki/index"
-mnotes note create --title "wiki/log"
-```
+### 5. Bootstrap wiki notes if absent — try in this order:
+   - `mnotes note search --query "title:wiki/index"` — if no result, run `mnotes note create --title "wiki/index" --content "# Wiki Index\n\nTop-level entry point for the workspace wiki."`
+   - `mnotes note search --query "title:wiki/log"` — if no result, run `mnotes note create --title "wiki/log" --content "# Wiki Log\n\nAuto-appended log of ingest / query / lint operations."`
 
 ### 6. Verify round-trip
 
@@ -77,7 +68,7 @@ mnotes kb recall --query "test"
 Or:
 
 ```bash
-mnotes connect status
+mnotes connect --status
 ```
 
 If the command succeeds, the integration is working.
