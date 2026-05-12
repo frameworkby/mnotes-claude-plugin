@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    {
+      "name": "mnotes",
+      "source": "https://github.com/frameworkby/mnotes-claude-plugin"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "mnotes",
+  "description": "m-notes Claude Code plugin: knowledge base hooks, /mnotes:store, /mnotes:recall, /mnotes:setup, and the knowledge-manager agent.",
+  "version": "0.1.0",
+  "author": { "name": "frameworkby" },
+  "repository": "https://github.com/frameworkby/mnotes-claude-plugin",
+  "homepage": "https://github.com/frameworkby/mnotes-claude-plugin",
+  "license": "MIT"
+}
