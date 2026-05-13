@@ -1,6 +1,6 @@
 # mnotes Claude Code Plugin
 
-Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Claude Code: automatic knowledge base hooks, `/mnotes:store`, `/mnotes:recall`, `/mnotes:setup` skills, and the `knowledge-manager` sub-agent.
+Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Claude Code: automatic knowledge base hooks, a suite of `/mnotes:*` skills covering the CLI surface, and the `knowledge-manager` sub-agent.
 
 ---
 
@@ -30,6 +30,16 @@ Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Cla
 | Skill `/mnotes:store` | `/mnotes:store` | Stores a knowledge entry via `mnotes kb store` |
 | Skill `/mnotes:recall` | `/mnotes:recall` | Recalls knowledge via `mnotes kb recall` |
 | Skill `/mnotes:setup` | `/mnotes:setup` | Interactive setup: login, workspace link, verify round-trip |
+| Skill `/mnotes:search` | `/mnotes:search` | Full-text or semantic note search (`mnotes search`) |
+| Skill `/mnotes:note` | `/mnotes:note` | Note CRUD: list / read / create / update / delete |
+| Skill `/mnotes:ask` | `/mnotes:ask` | Synthesized answer + cited sources (`mnotes kb ask`) |
+| Skill `/mnotes:ingest` | `/mnotes:ingest` | Batch upsert (up to 50) of knowledge entries from JSON |
+| Skill `/mnotes:graph` | `/mnotes:graph` | Graph exploration: neighbors / related / backlinks / paths |
+| Skill `/mnotes:moc` | `/mnotes:moc` | Generate a Map of Content for a folder or tag |
+| Skill `/mnotes:session` | `/mnotes:session` | Log / replay / resume AI conversation sessions |
+| Skill `/mnotes:wiki` | `/mnotes:wiki` | Lint, refresh index, append to `wiki/log` |
+| Skill `/mnotes:tasks` | `/mnotes:tasks` | List / toggle tasks parsed from note checkboxes |
+| Skill `/mnotes:snapshot` | `/mnotes:snapshot` | Export KB, view stats, scan conflicts, decay/archive |
 | Agent `knowledge-manager` | Sub-agent | Full wiki management: ingest, recall, lint, session logging |
 | Hook `SessionStart` | Auto on session open | Runs `mnotes composite project-load` and injects context |
 | Hook `PostToolUse` (Bash) | Auto after every Bash call | Auto-appends wiki log entries for mnotes CLI calls |
