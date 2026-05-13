@@ -14,15 +14,31 @@ fi
 # so the hook never blocks Claude Code from starting.
 _context=$(mnotes composite project-load --query "session start" 2>/dev/null) || true
 
-if [ -n "$_context" ]; then
-  # Wrap in the SessionStart hook JSON envelope so Claude Code injects the
-  # context as additionalContext for the session.
-  # Uses jq when available for safe JSON encoding; falls back to printf.
-  if command -v jq >/dev/null 2>&1; then
-    printf '%s' "$_context" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'
-  else
-    # Minimal fallback: escape backslashes and double-quotes only.
-    _escaped=$(printf '%s' "$_context" | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/g' | tr -d '\n')
-    printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$_escaped"
+if [ -n "$_context" ] && command -v jq >/dev/null 2>&1; then
+  # Shape the raw payload into a compact, model-ready markdown digest before
+  # emitting. The raw project-load JSON includes scoring metadata, ids, tags,
+  # and full excerpts — on workspaces with non-trivial KB content this exceeds
+  # Claude Code's inline-context budget and the harness persists the payload
+  # to disk, defeating the hook's purpose. See:
+  # https://github.com/frameworkby/mnotes-claude-plugin/issues/1
+  _MNOTES_LIMIT="${MNOTES_SESSION_START_LIMIT:-10}"
+  _MNOTES_EXCERPT="${MNOTES_SESSION_START_EXCERPT:-240}"
+
+  _digest=$(printf '%s' "$_context" | jq -r --argjson n "$_MNOTES_LIMIT" --argjson e "$_MNOTES_EXCERPT" '
+    def clip($s; $max): if ($s|type) == "string" and ($s|length) > $max then ($s[0:$max] + "…") else $s end;
+    (.data // .) as $d |
+    [
+      "# m-notes: project context",
+      (if ($d.knowledge // []) | length > 0 then
+        "## Knowledge (top \([$n, (($d.knowledge // []) | length)] | min) of \(($d.knowledge // []) | length))\n" +
+        (($d.knowledge // []) | .[0:$n] | map("- **\(.title // .key // "(untitled)")**" + (if .excerpt then " — \(clip(.excerpt; $e))" else "" end)) | join("\n"))
+      else empty end),
+      (if ($d.stale_entries // []) | length > 0 then "## Stale entries: \(($d.stale_entries // []) | length)" else empty end),
+      (if ($d.context // {}) | length > 0 then "## Context\n```json\n\($d.context | tojson)\n```" else empty end)
+    ] | map(select(. != null and . != "")) | join("\n\n")
+  ')
+
+  if [ -n "$_digest" ]; then
+    printf '%s' "$_digest" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'
   fi
 fi
