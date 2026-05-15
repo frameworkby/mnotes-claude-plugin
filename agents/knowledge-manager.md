@@ -63,7 +63,7 @@ This frontmatter is a convention, not enforced by the server. Agents and humans 
 4. **ALWAYS load context at session start.** Run `mnotes composite project-load`. Use `mnotes session resume` if mid-conversation.
 5. **INGEST sources coherently.** When the user drops a URL, long paste, or file: don't just dump it into one note. Run the **ingest loop** (below).
 6. **LINT the wiki periodically.** On session start for large workspaces, and after any ingest, run the **lint loop** (below).
-7. **READ schema before editing.** Before creating or updating notes, run `mnotes note search --query type:config`. Follow their conventions. If none exist, offer to create a starter schema note.
+7. **READ schema before editing.** Before creating or updating notes, run `mnotes note search "type:config"`. Follow their conventions. If none exist, offer to create a starter schema note.
 8. **EVERY note must link.** Outbound `[[wikilinks]]` are mandatory — an orphan note is invisible.
 
 ## Non-Negotiable Checklist
@@ -75,9 +75,9 @@ These are not suggestions. Skip any step and the wiki degrades.
 - [ ] Read the Wiki Index: `mnotes note-ops by-title --title "Wiki Index"` — find relevant pages and drill in before falling back to search
 - [ ] Run `mnotes composite project-load`
 - [ ] Run `mnotes kb recall --query "<topic>"` — past you already figured things out
-- [ ] Run `mnotes note search --query "<topic>"` for related wiki pages
+- [ ] Run `mnotes note search "<topic>"` for related wiki pages
 - [ ] If the graph is empty, run `mnotes graph populate` (idempotent)
-- [ ] Run `mnotes note search --query "type:config"` for schema notes before editing
+- [ ] Run `mnotes note search "type:config"` for schema notes before editing
 
 Do not skip this. Do not say "I'll check later." Do not assume you know what's in the wiki.
 
@@ -120,7 +120,7 @@ A single source touching fewer than 5 notes is a red flag — that's a sign you'
 
 When answering a non-trivial question:
 
-1. **Search first**: `mnotes note search --query "<question terms>"` + `mnotes kb recall --query "<question terms>"`.
+1. **Search first**: `mnotes note search "<question terms>"` + `mnotes kb recall --query "<question terms>"`.
 2. **Answer from the wiki**: synthesise from what you find. Prefer existing notes over re-deriving from scratch.
 3. **File non-trivial answers back**: if the answer required real synthesis or isn't already a note, create one (use the appropriate page type: `concept`, `overview`, etc.). This is the compounding loop — answering questions grows the wiki.
 4. **Log the query**: the PostToolUse hook appends the log entry automatically when you run `mnotes search` / `mnotes recall-knowledge`. You do not need to call `wiki log append` manually — the hook handles it.
@@ -216,7 +216,7 @@ Node types: **note**, **tag**, **concept**. Edge types: **wikilink**, **related*
 ```bash
 mnotes graph create-node --label "Auth Module" --node-type concept
 mnotes graph create-node --label "PostgreSQL" --node-type concept
-mnotes graph create-edge --source <authNodeId> --target <pgNodeId> --edge-type related
+mnotes graph create-edge --source-id <authNodeId> --target-id <pgNodeId> --edge-type related
 ```
 
 ## CLI Commands Reference
@@ -247,7 +247,7 @@ Workspace is resolved automatically from env/config. No `--workspace-id` flag re
 | `mnotes note-ops append --id <id>` | Add to existing page |
 | `mnotes note get --id <id>` | Read by ID |
 | `mnotes note-ops by-title --title "..."` | Read by title |
-| `mnotes note search --query "..."` | FTS + semantic search |
+| `mnotes note search "..."` | FTS + semantic search (query is positional) |
 | `mnotes note list` | List by folder |
 | `mnotes note-ops daily` | Today's capture note |
 | `mnotes tag manage --id <id>` | Add/remove tags |
