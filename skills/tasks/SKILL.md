@@ -18,12 +18,16 @@ Default returns open tasks across the workspace.
 ## Toggle a task (mark done / undone)
 
 ```bash
-mnotes task toggle --task-id <id>
+mnotes task toggle --note-id <id> --task-index <n> [--done | --not-done]
 ```
+
+- **--note-id** (required): ID of the note containing the task.
+- **--task-index** (required): The 1-based line number reported by `task list`.
+- **--done** / **--not-done**: Optional explicit target state. If neither is passed, the task's checked state is flipped.
 
 The server updates the underlying note's markdown in place — the source of truth stays in the note body.
 
 ## Tips
-- Each task carries a `noteId` and `line` — link the user back to the source note when reporting.
+- Each result from `task list` carries a `noteId` and `line` — feed them to `task toggle --note-id <noteId> --task-index <line>`.
 - For a daily roundup of open tasks, use `mnotes note-ops daily-digest`.
 - Tasks are parsed on note write; if newly added items don't appear, ensure the note was saved (not just edited locally).

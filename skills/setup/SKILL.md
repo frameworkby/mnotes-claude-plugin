@@ -55,9 +55,18 @@ Run this inside the current project directory to bind it:
 mnotes workspace link
 ```
 
-### 5. Bootstrap wiki notes if absent — try in this order:
-   - `mnotes note search --query "title:wiki/index"` — if no result, run `mnotes note create --title "wiki/index" --content "# Wiki Index\n\nTop-level entry point for the workspace wiki."`
-   - `mnotes note search --query "title:wiki/log"` — if no result, run `mnotes note create --title "wiki/log" --content "# Wiki Log\n\nAuto-appended log of ingest / query / lint operations."`
+### 5. Bootstrap wiki notes if absent
+
+`mnotes note search` takes the query as a positional argument (no `--query` flag).
+
+   - `mnotes note search "wiki/index"` — if no result, run `mnotes note create --title "wiki/index" --content "# Wiki Index\n\nTop-level entry point for the workspace wiki."`
+   - `mnotes note search "wiki/log"` — if no result, run `mnotes note create --title "wiki/log" --content "# Wiki Log\n\nAuto-appended log of ingest / query / lint operations."`
+
+Content can also be piped on stdin instead of `--content`:
+
+```bash
+echo "# Wiki Index" | mnotes note create --title "wiki/index"
+```
 
 ### 6. Verify round-trip
 
