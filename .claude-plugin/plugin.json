@@ -1,7 +1,7 @@
 {
   "name": "mnotes",
   "description": "m-notes Claude Code plugin: knowledge base hooks, /mnotes:* skills covering store, recall, setup, search, note CRUD, ask, ingest, graph, moc, session, wiki, tasks, and snapshot, plus the knowledge-manager agent.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": { "name": "frameworkby" },
   "repository": "https://github.com/frameworkby/mnotes-claude-plugin",
   "homepage": "https://github.com/frameworkby/mnotes-claude-plugin",
