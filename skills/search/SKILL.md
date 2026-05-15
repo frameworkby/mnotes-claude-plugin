@@ -24,4 +24,4 @@ Returns a ranked list of `{ id, title, snippet, score }` results. Add `--json` f
 ## Tips
 - If the user wants notes filtered by tag, use `mnotes folder search-tags --tags "<csv>"` instead.
 - To recall stored knowledge entries by key, use `/mnotes:recall`.
-- Use `mnotes note read <id>` (or `mnotes read <id>`) to fetch a full result.
+- Use `mnotes note get <id>` (or the top-level alias `mnotes read <id>`) to fetch a full result.

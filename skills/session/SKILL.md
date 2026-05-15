@@ -36,10 +36,29 @@ mnotes session replay --session-id <id>
 mnotes session resume --session-id <id>
 ```
 
-## Save the current conversation as a one-shot session note
+## Save the current conversation as a new note
+
 ```bash
-mnotes session save-conversation --session-id <id> --content "<markdown transcript>"
+mnotes session save-conversation --messages '<json>' [--title "<title>"] [--source "<source>"]
 ```
+
+- **--messages** (required): JSON array of message objects, each with `role` (`user` or `assistant`) and `content`.
+- **--title**: Optional title for the resulting note.
+- **--source**: Optional source identifier (e.g. agent name, branch, issue).
+
+Example:
+
+```bash
+mnotes session save-conversation \
+  --title "Sprint 52 kickoff chat" \
+  --source "agent:planner" \
+  --messages '[
+    {"role":"user","content":"Plan Sprint 52"},
+    {"role":"assistant","content":"Theme: plugin CLI hygiene…"}
+  ]'
+```
+
+Note: `save-conversation` writes a one-shot note from a complete transcript; it does not use `--session-id`. For appending segments to an existing audit-trail log, use `session log` above with a stable `--session-id`.
 
 ## Tips
 - Log proactively when the user says "remember this conversation" or makes notable decisions.

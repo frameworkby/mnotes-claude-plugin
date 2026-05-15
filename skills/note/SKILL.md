@@ -7,6 +7,11 @@ description: Create, read, update, delete, or list m-notes notes. Use when the u
 
 Run the appropriate `mnotes note` subcommand via Bash. These are the raw note CRUD operations — for storing/recalling structured knowledge entries, prefer `/mnotes:store` and `/mnotes:recall`.
 
+The CLI exposes note CRUD in two equivalent surfaces:
+
+- **Group form** — `mnotes note <action>` (recommended).
+- **Top-level shortcuts** — `mnotes create`, `mnotes read <id>`, `mnotes update <id>`, `mnotes delete <id>` (legacy aliases). Note that the top-level shortcuts use `--folder-id <id>` while the group form uses `--folder <id>` — pick one form per command and stick with it.
+
 ## List
 
 ```bash
@@ -16,20 +21,23 @@ mnotes note list [--folder-id <id>] [--limit <n>] [--cursor <c>]
 ## Read
 
 ```bash
-mnotes note read <id>
-# or legacy: mnotes read <id>
+mnotes note get <id>
+# or top-level alias: mnotes read <id>
 ```
 
-## Create (content via stdin)
+## Create
+
+`mnotes note create` accepts content either via `--content` or piped on stdin.
 
 ```bash
-echo "# Heading\n\nBody markdown" | mnotes create --title "<title>" [--folder-id <id>]
-```
+# Group form, --folder
+mnotes note create --title "<title>" [--folder <id>] [--tags tag1 tag2] [--content "<markdown>"]
 
-Heredoc form for multi-line bodies:
+# Top-level alias, --folder-id, stdin content
+echo "# Heading" | mnotes create --title "<title>" [--folder-id <id>]
 
-```bash
-mnotes create --title "Meeting Notes" <<'MD'
+# Heredoc for multi-line bodies
+mnotes note create --title "Meeting Notes" <<'MD'
 # Agenda
 - Item 1
 - Item 2
@@ -39,17 +47,26 @@ MD
 ## Update
 
 ```bash
-mnotes update <id> [--title "<new title>"] [--folder-id <id>]
-# Body can be piped on stdin to replace content.
+mnotes note update <id> [--title "<new title>"] [--folder <id>] [--content "<markdown>"]
+# Body can also be piped on stdin to replace content.
 ```
 
 ## Delete
 
 ```bash
-mnotes delete <id>
+mnotes note delete <id>
+# or top-level alias: mnotes delete <id>
 ```
 
+## Search
+
+```bash
+mnotes note search "<query>" [--semantic] [--limit <n>]
+```
+
+`<query>` is a positional argument — there is no `--query` flag.
+
 ## Tips
-- Titles with slashes (e.g. `wiki/index`) trigger a slash-warning unless `--folder-id` is provided; this is intentional — pick a folder or accept the slash as part of the title.
+- Titles with slashes (e.g. `wiki/index`) trigger a slash-warning unless a folder is provided; this is intentional — pick a folder or accept the slash as part of the title.
 - Add `--json` to any command for parseable output.
 - For per-note operations like pin, star, archive, frontmatter, or version history, use `mnotes note-ops <action>`.
