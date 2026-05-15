@@ -10,10 +10,14 @@ Run `mnotes kb <action>` via Bash for whole-KB read-only operations.
 ## Export every knowledge entry
 
 ```bash
-mnotes kb snapshot [--tags "<csv>"] [--out <path>]
+mnotes kb snapshot [--tags "<csv>"] [--format json|markdown]
 ```
 
-Outputs every entry (or every entry matching the tag filter) as JSON. Use this for backups, off-line analysis, or migrating between workspaces.
+Outputs every entry (or every entry matching the tag filter) in the chosen format. `--format` defaults to `json`. To write to a file, redirect via shell:
+
+```bash
+mnotes kb snapshot --format markdown > kb-snapshot.md
+```
 
 ## Stats — counts, tag distribution, freshness
 
@@ -27,31 +31,50 @@ mnotes kb stats
 mnotes kb scan-conflicts
 ```
 
-Re-runs the conflict detector across the KB. Results land in:
+Re-runs the conflict detector across the KB. Inspect results with:
 
 ```bash
 mnotes kb conflicts [--status open|resolved] [--limit <n>]
 ```
 
-## Consolidate near-duplicates
+## Consolidate near-duplicate notes
 
 ```bash
-mnotes kb consolidate --keys "<key1>,<key2>"
+mnotes kb consolidate --note-ids "<id1>,<id2>,..." --target-title "<title>" --strategy merge|summarize
 ```
 
-Merges entries — review the output before accepting; the operation is durable.
+- **--note-ids** (required): Comma-separated source note IDs to consolidate.
+- **--target-title** (required): Title for the resulting consolidated note.
+- **--strategy** (required): `merge` (concatenate + dedupe) or `summarize` (LLM-summarized).
+
+Source notes are archived after consolidation. Review the output before relying on it — the operation is durable.
 
 ## Decay — surface stale entries
 
 ```bash
-mnotes kb decay [--threshold-days <n>]
+mnotes kb decay [--threshold <0..1>] [--limit <n>] [--decay-window <days>] [--tags <csv>] [--max-importance <n>]
 ```
+
+- **--threshold**: Minimum decay score 0.0–1.0 (default 0.5).
+- **--decay-window**: Days for full decay (default 90, max 365).
+- **--limit**: Max entries returned (default 20, max 200).
+
+Decay score = `min(1.0, daysSinceUpdate / decayWindow)` — 0 is fresh, 1 is fully stale.
 
 ## Archive stale knowledge
 
+Two mutually exclusive modes:
+
 ```bash
+# Key-mode — archive a specific entry or list
 mnotes kb archive --key "<category/name>"
+mnotes kb archive --keys "<key1>,<key2>"
+
+# Threshold-mode — archive everything matching a decay/importance threshold
+mnotes kb archive --max-decay-score <0..1> --max-importance <n> [--dry-run]
 ```
+
+Use `--dry-run` in threshold-mode to preview without writing.
 
 ## Tips
 - Run `mnotes kb stats` before/after large ingests to verify growth and tag balance.
