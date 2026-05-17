@@ -123,7 +123,7 @@ When answering a non-trivial question:
 1. **Search first**: `mnotes note search "<question terms>"` + `mnotes kb recall --query "<question terms>"`.
 2. **Answer from the wiki**: synthesise from what you find. Prefer existing notes over re-deriving from scratch.
 3. **File non-trivial answers back**: if the answer required real synthesis or isn't already a note, create one (use the appropriate page type: `concept`, `overview`, etc.). This is the compounding loop — answering questions grows the wiki.
-4. **Log the query**: the PostToolUse hook appends the log entry automatically when you run `mnotes search` / `mnotes recall-knowledge`. You do not need to call `wiki log append` manually — the hook handles it.
+4. **Log the query**: the PostToolUse hook appends the log entry automatically when you run `mnotes note search`, `mnotes kb recall`, or `mnotes bulk knowledge-recall`. You do not need to call `wiki log append` manually — the hook handles it.
 
 Questions answered and not filed are knowledge lost.
 

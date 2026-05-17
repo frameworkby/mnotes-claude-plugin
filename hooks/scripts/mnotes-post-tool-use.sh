@@ -55,7 +55,7 @@ if printf '%s' "${_command}" | grep -qE '(note[[:space:]]+create|note[[:space:]]
     _ref="untitled"
   fi
 
-elif printf '%s' "${_command}" | grep -qE '\bsearch\b|recall-knowledge'; then
+elif printf '%s' "${_command}" | grep -qE '\bsearch\b|recall-knowledge|kb[[:space:]]+recall|bulk[[:space:]]+knowledge-recall'; then
   _kind="query"
   # Extract --query value or first positional after subcommand.
   if printf '%s' "${_command}" | grep -qE -- '--query[[:space:]]+'"'"'([^'"'"']+)'"'"''; then
@@ -66,7 +66,7 @@ elif printf '%s' "${_command}" | grep -qE '\bsearch\b|recall-knowledge'; then
     _ref=$(printf '%s' "${_command}" | grep -oE -- '--query[[:space:]]+[^[:space:]]+' | sed 's/--query[[:space:]]*//' | head -1) || true
   else
     # First positional arg after subcommand keyword; filter out shell redirections.
-    _ref=$(printf '%s' "${_command}" | grep -oE '(search|recall-knowledge)[[:space:]]+[^[:space:]]+' | awk '{print $2}' | head -1 | grep -vE '^(\||&|;|<|>|[12]?>|>>|&&|\|\|)' | sed 's/[;&]$//') || true
+    _ref=$(printf '%s' "${_command}" | sed -nE 's/.*(search|recall-knowledge|kb[[:space:]]+recall|bulk[[:space:]]+knowledge-recall)[[:space:]]+([^[:space:]]+).*/\2/p' | head -1 | grep -vE '^(\||&|;|<|>|[12]?>|>>|&&|\|\|)' | sed 's/[;&]$//') || true
   fi
   if [ -z "${_ref}" ]; then
     _ref="query"
