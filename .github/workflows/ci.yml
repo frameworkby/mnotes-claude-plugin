@@ -16,3 +16,11 @@ jobs:
           node-version: "20"
       - name: Smoke-test CLI references
         run: node scripts/check-mnotes-refs.mjs
+
+  test-post-tool-use:
+    name: "PostToolUse hook smoke test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run hook classifier tests
+        run: bash scripts/test-post-tool-use.sh
