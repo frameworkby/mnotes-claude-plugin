@@ -42,7 +42,47 @@ Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Cla
 | Skill `/mnotes:snapshot` | `/mnotes:snapshot` | Export KB, view stats, scan conflicts, decay/archive |
 | Agent `knowledge-manager` | Sub-agent | Full wiki management: ingest, recall, lint, session logging |
 | Hook `SessionStart` | Auto on session open | Runs `mnotes composite project-load` and injects context |
-| Hook `PostToolUse` (Bash) | Auto after every Bash call | Auto-appends wiki log entries for mnotes CLI calls |
+| Hook `PostToolUse` | Auto after Bash / Read / Edit / Write tool calls | Auto-appends wiki log entries; see [PostToolUse hook](#posttooluse-hook) below |
+
+---
+
+## PostToolUse hook
+
+`hooks/scripts/mnotes-post-tool-use.sh` listens to Claude Code's PostToolUse events and appends a `mnotes wiki log` entry for the tool calls below. Always exits `0` so it never blocks Claude Code.
+
+### Tool family → log mapping
+
+| Tool family | `--kind` | `--ref` | Notes |
+|---|---|---|---|
+| Bash: `mnotes note create / update`, `note-ops append` | `ingest` | `--title` or stdout head | Legacy (v1.0+) |
+| Bash: `mnotes search`, `recall-knowledge`, `kb recall`, `bulk knowledge-recall` | `query` | `--query` or first positional | Legacy (`kb recall` added in v1.2.1) |
+| Bash: `mnotes wiki lint`, `kb scan-conflicts` | `lint` | check name or `all` | Legacy |
+| Read | `ingest` | `file_path` | New in v1.3.0 |
+| Edit / Write — ordinary path | `ingest` | `file_path` | New in v1.3.0 |
+| Edit / Write — `CLAUDE.md`, `.claude/settings(.local)?.json`, `presets/*/CLAUDE.md` | `decision` | `file_path` | New in v1.3.0 |
+| Bash: `git checkout -b`, `git commit`, `gh pr create / merge`, `gh release create`, `(npm\|pnpm\|yarn) publish` | `decision` | branch name or command | New in v1.3.0; allowlist below |
+| Anything else | *(skipped)* | — | Silent — no log |
+
+### Dedup and rate cap
+
+- **5-minute dedup window**: identical `(kind, ref)` pairs within 300 seconds are skipped.
+- **30-per-session cap**: after 30 logged entries in one Claude Code session, the hook stops emitting until the session rolls over.
+
+### Environment-variable extension points
+
+| Variable | Effect |
+|---|---|
+| `MNOTES_HOOK_DECISION_ALLOW` | Comma-separated extra regexes appended to the Bash decision allowlist. Example: `'^terraform[[:space:]]+apply,^kubectl[[:space:]]+apply'` |
+| `MNOTES_HOOK_DECISION_PATHS` | Comma-separated extra regexes appended to the Edit/Write decision-path list. Example: `'(^\|/)Dockerfile$,(^\|/)docker-compose\.yml$'` |
+| `MNOTES_HOOK_DEBUG=1` | Append a debug line per emission to `~/.claude/plugins/mnotes/state/postusetool.debug.log`. |
+
+### Verifying locally
+
+```bash
+bash scripts/test-post-tool-use.sh
+```
+
+Runs the 34-case smoke test covering every tool family above, env-var extension, and the rate-cap invariant. Wired into CI (`.github/workflows/ci.yml`).
 
 ---
 
