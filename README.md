@@ -51,7 +51,7 @@ Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper ar
 
 ## PostToolUse hook
 
-`hooks/scripts/mnotes-post-tool-use.sh` listens to Claude Code's PostToolUse events and appends a `mnotes wiki log` entry for the tool calls below. Always exits `0` so it never blocks Claude Code.
+`hooks/scripts/mnotes-post-tool-use.mjs` listens to Claude Code's PostToolUse events and appends a `mnotes wiki log` entry for the tool calls below. Always exits `0` so it never blocks Claude Code. Runs on Node 18+ — no bash, jq, or other Unix tools required.
 
 ### Tool family → log mapping
 
@@ -82,7 +82,7 @@ Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper ar
 ### Verifying locally
 
 ```bash
-bash scripts/test-post-tool-use.sh
+node scripts/test-post-tool-use.mjs
 ```
 
 Runs the 34-case smoke test covering every tool family above, env-var extension, and the rate-cap invariant. Wired into CI (`.github/workflows/ci.yml`).
