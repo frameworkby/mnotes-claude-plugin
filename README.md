@@ -18,12 +18,15 @@ Integrates [m-notes](https://github.com/frameworkby/remedy-pod-m-notes) with Cla
 | Requirement | Notes |
 |---|---|
 | Node.js ≥ 18 | Required by the `mnotes` CLI |
+| Operating system | Windows (PowerShell or cmd.exe), macOS, and Linux all supported — no WSL required |
 | `mnotes` CLI | Auto-fetched via `npx` if not globally installed (see `bin/mnotes` wrapper) |
 | m-notes account | Run `mnotes login` once, or use `/mnotes:setup` to walk through it interactively |
 
 ---
 
 ## What It Ships
+
+Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper are Node-based.
 
 | Asset | Trigger / path | What it does |
 |---|---|---|
@@ -108,9 +111,18 @@ export MNOTES_WORKSPACE_ID=your-workspace-id
 
 ---
 
+## Platform notes
+
+| Platform | Details |
+|---|---|
+| Windows | Works in PowerShell and cmd.exe. State dir is `%USERPROFILE%\.claude\plugins\mnotes\state`. Hooks invoke `node` directly via `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/*.mjs` — no shell required. |
+| macOS / Linux | Unchanged behavior. State dir is `~/.claude/plugins/mnotes/state`. |
+
+---
+
 ## Versioning
 
-This plugin is versioned independently from the m-notes app (`vN`) and the CLI (`cli-vX.Y.Z`). Plugin releases use `vX.Y.Z` tags on this repo.
+This plugin is versioned independently from the m-notes app (`vN`) and the CLI (`cli-vX.Y.Z`). Plugin releases use `vX.Y.Z` tags on this repo. `v1.4.0` is the Windows-support release.
 
 ---
 
