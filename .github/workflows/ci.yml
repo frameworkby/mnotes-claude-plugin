@@ -8,6 +8,9 @@ on:
 jobs:
   check-mnotes-refs:
     name: "Validate `mnotes <cmd>` references"
+    # ubuntu-only for now: scripts/check-mnotes-refs.mjs spawns `mnotes`,
+    # which isn't installed on runners. The script needs to self-skip when
+    # the CLI is absent before this can matrix on Windows. Tracked separately.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,8 +22,15 @@ jobs:
 
   test-post-tool-use:
     name: "PostToolUse hook smoke test"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Run hook classifier tests
-        run: bash scripts/test-post-tool-use.sh
+        run: node scripts/test-post-tool-use.mjs
