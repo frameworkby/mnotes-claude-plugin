@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/scripts/mnotes-session-start.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/mnotes-session-start.mjs\""
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/scripts/mnotes-post-tool-use.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/mnotes-post-tool-use.mjs\""
           }
         ]
       }
