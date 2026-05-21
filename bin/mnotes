@@ -1,8 +1,2 @@
 #!/usr/bin/env bash
-# Thin wrapper: defers to user's installed mnotes CLI if present, else npx fetches it.
-set -e
-if command -v mnotes >/dev/null 2>&1 && [ "$(command -v mnotes)" != "$0" ]; then
-  # User has a global install — use it.
-  exec "$(command -v mnotes)" "$@"
-fi
-exec npx -y mnotes@^1 "$@"
+exec node "$(dirname "$0")/mnotes.mjs" "$@"
