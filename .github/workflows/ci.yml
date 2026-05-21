@@ -8,11 +8,10 @@ on:
 jobs:
   check-mnotes-refs:
     name: "Validate `mnotes <cmd>` references"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    # ubuntu-only for now: scripts/check-mnotes-refs.mjs spawns `mnotes`,
+    # which isn't installed on runners. The script needs to self-skip when
+    # the CLI is absent before this can matrix on Windows. Tracked separately.
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
