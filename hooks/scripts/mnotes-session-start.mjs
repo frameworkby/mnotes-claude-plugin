@@ -21,7 +21,7 @@ function buildDigest(payload, limit, excerptMax) {
   const knowledge = Array.isArray(d.knowledge) ? d.knowledge : [];
   if (knowledge.length > 0) {
     const shown = Math.min(limit, knowledge.length);
-    const lines = knowledge.slice(0, limit).map((k) => {
+    const lines = knowledge.slice(0, shown).map((k) => {
       const title = k.title || k.key || "(untitled)";
       const excerpt = k.excerpt ? ` — ${clip(k.excerpt, excerptMax)}` : "";
       return `- **${title}**${excerpt}`;
@@ -55,13 +55,17 @@ try {
   const excerptMax =
     parseInt(process.env.MNOTES_SESSION_START_EXCERPT || "240", 10) || 240;
 
+  // Spawn the npm-bin shim directly with shell:false. Although the args here
+  // are static today, future changes could pass user-influenced strings; making
+  // shell:false the invariant prevents cmd.exe injection on Windows.
+  const executable = process.platform === "win32" ? "mnotes.cmd" : "mnotes";
   const result = spawnSync(
-    "mnotes",
+    executable,
     ["composite", "project-load", "--query", "session start"],
     {
       stdio: ["ignore", "pipe", "ignore"],
       encoding: "utf8",
-      shell: process.platform === "win32",
+      shell: false,
     },
   );
 

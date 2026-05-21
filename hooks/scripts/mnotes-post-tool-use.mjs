@@ -19,9 +19,50 @@ const STATE_DIR = path.join(os.homedir(), ".claude", "plugins", "mnotes", "state
 const DEFAULT_DECISION_PATHS =
   "(^|/)CLAUDE\\.md$|(^|/)\\.claude/settings(\\.local)?\\.json$|(^|/)presets/[^/]+/CLAUDE\\.md$";
 
-// POSIX [[:space:]] equivalents are unnecessary in JS — \s is fine for our inputs.
+// \s covers POSIX [[:space:]] for our inputs; env overrides are translated below.
 const DEFAULT_BASH_DECISION_ALLOW =
   "^git\\s+checkout\\s+-b\\s+|^git\\s+commit(\\s|$)|^gh\\s+pr\\s+create(\\s|$)|^gh\\s+pr\\s+merge(\\s|$)|^gh\\s+release\\s+create(\\s|$)|^(npm|pnpm|yarn)\\s+publish(\\s|$)";
+
+// Compile env-supplied regex extensions once at startup so a malformed user
+// pattern produces a single stderr warning instead of silently disabling the
+// classifier inside the per-event try/catch.
+const DECISION_PATHS_REGEX = (() => {
+  let pattern = DEFAULT_DECISION_PATHS;
+  const extra = process.env.MNOTES_HOOK_DECISION_PATHS;
+  if (extra) {
+    const candidate = pattern + "|" + extra.split(",").join("|");
+    try {
+      const re = new RegExp(candidate);
+      return re;
+    } catch {
+      process.stderr.write(
+        "mnotes-hook: invalid MNOTES_HOOK_DECISION_PATHS regex, ignoring extension\n",
+      );
+    }
+  }
+  return new RegExp(pattern);
+})();
+
+const BASH_DECISION_REGEX = (() => {
+  let pattern = DEFAULT_BASH_DECISION_ALLOW;
+  const extra = process.env.MNOTES_HOOK_DECISION_ALLOW;
+  if (extra) {
+    const translated = extra
+      .split(",")
+      .map((s) => s.replace(/\[\[:space:\]\]/g, "\\s"))
+      .join("|");
+    const candidate = pattern + "|" + translated;
+    try {
+      const re = new RegExp(candidate);
+      return re;
+    } catch {
+      process.stderr.write(
+        "mnotes-hook: invalid MNOTES_HOOK_DECISION_ALLOW regex, ignoring extension\n",
+      );
+    }
+  }
+  return new RegExp(pattern);
+})();
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -34,12 +75,14 @@ function readStdin() {
 }
 
 function extractFlag(command, flag) {
+  // Escape regex metacharacters in `flag` to allow safe interpolation.
+  const f = flag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   // Try single-quoted, double-quoted, then bare value.
-  const sq = new RegExp(`${flag}\\s+'([^']+)'`).exec(command);
+  const sq = new RegExp(`${f}\\s+'([^']+)'`).exec(command);
   if (sq) return sq[1];
-  const dq = new RegExp(`${flag}\\s+"([^"]+)"`).exec(command);
+  const dq = new RegExp(`${f}\\s+"([^"]+)"`).exec(command);
   if (dq) return dq[1];
-  const bare = new RegExp(`${flag}\\s+(\\S+)`).exec(command);
+  const bare = new RegExp(`${f}\\s+(\\S+)`).exec(command);
   if (bare) return bare[1];
   return "";
 }
@@ -49,20 +92,6 @@ function classify(payload) {
   const command = (payload.tool_input && payload.tool_input.command) || "";
   const filePath = (payload.tool_input && payload.tool_input.file_path) || "";
 
-  let decisionPathsRegex = DEFAULT_DECISION_PATHS;
-  if (process.env.MNOTES_HOOK_DECISION_PATHS) {
-    decisionPathsRegex += "|" + process.env.MNOTES_HOOK_DECISION_PATHS.split(",").join("|");
-  }
-  let bashDecisionRegex = DEFAULT_BASH_DECISION_ALLOW;
-  if (process.env.MNOTES_HOOK_DECISION_ALLOW) {
-    // Original allowlist uses POSIX [[:space:]] — translate to \s for Node regex.
-    const extra = process.env.MNOTES_HOOK_DECISION_ALLOW
-      .split(",")
-      .map((s) => s.replace(/\[\[:space:\]\]/g, "\\s"))
-      .join("|");
-    bashDecisionRegex += "|" + extra;
-  }
-
   if (toolName === "Read") {
     if (!filePath) return null;
     return { kind: "ingest", ref: filePath };
@@ -70,7 +99,7 @@ function classify(payload) {
 
   if (toolName === "Edit" || toolName === "Write") {
     if (!filePath) return null;
-    const isDecision = new RegExp(decisionPathsRegex).test(filePath);
+    const isDecision = DECISION_PATHS_REGEX.test(filePath);
     return { kind: isDecision ? "decision" : "ingest", ref: filePath };
   }
 
@@ -118,7 +147,7 @@ function classify(payload) {
     }
 
     // ── Non-mnotes Bash: decision allowlist ──────────────────────────────────
-    if (!new RegExp(bashDecisionRegex).test(cmdTrim)) {
+    if (!BASH_DECISION_REGEX.test(cmdTrim)) {
       return null;
     }
     let ref;
@@ -168,20 +197,24 @@ function dedupCheck(kind, ref) {
   });
 
   // Dedup: same hash already present?
-  if (lines.some((line) => line.endsWith(` ${hash}`))) {
-    try {
-      fs.writeFileSync(dedupFile, lines.join("\n") + (lines.length ? "\n" : ""));
-    } catch {}
-    return true; // duplicate
+  const isDuplicate = lines.some((line) => line.endsWith(` ${hash}`));
+  if (!isDuplicate) {
+    lines.push(`${now} ${hash}`);
   }
-
-  lines.push(`${now} ${hash}`);
   // Cap to last 200.
   if (lines.length > 200) lines = lines.slice(-200);
+
+  // Atomic write: two parallel hook invocations could otherwise clobber the
+  // dedup file mid-read-modify-write. Write to a unique tmp file, then rename
+  // over the target (rename is atomic on POSIX and Windows NTFS).
+  const tmp = `${dedupFile}.tmp.${process.pid}.${crypto.randomBytes(6).toString("hex")}`;
   try {
-    fs.writeFileSync(dedupFile, lines.join("\n") + "\n");
-  } catch {}
-  return false;
+    fs.writeFileSync(tmp, lines.join("\n") + (lines.length ? "\n" : ""));
+    fs.renameSync(tmp, dedupFile);
+  } catch {
+    try { fs.unlinkSync(tmp); } catch {}
+  }
+  return isDuplicate;
 }
 
 function sessionCap(sessionId) {
@@ -277,11 +310,16 @@ function buildSummary(stdout, toolName, ref) {
     const summary = buildSummary(stdout, payload.tool_name, ref);
 
     // Fire-and-forget — don't await.
+    // Never use `shell: true`: `ref` and `summary` are user-influenced and would
+    // otherwise be interpreted by cmd.exe on Windows. Spawn the npm-bin shim
+    // directly (`mnotes.cmd` on Windows, `mnotes` elsewhere) with shell:false so
+    // args are passed verbatim — no shell metacharacter interpretation.
     try {
+      const executable = process.platform === "win32" ? "mnotes.cmd" : "mnotes";
       const child = spawn(
-        "mnotes",
+        executable,
         ["wiki", "log", "append", "--kind", kind, "--ref", ref, "--summary", summary],
-        { stdio: "ignore", shell: process.platform === "win32", detached: false },
+        { stdio: "ignore", shell: false, detached: false },
       );
       child.on("error", () => {});
       child.unref();
@@ -289,7 +327,7 @@ function buildSummary(stdout, toolName, ref) {
 
     if (process.env.MNOTES_HOOK_DEBUG === "1") {
       try {
-        const ts = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+        const ts = new Date().toISOString().slice(0, 19) + "Z";
         const debugLine = `${ts} tool=${payload.tool_name} kind=${kind} ref=${ref} summary=${summary}\n`;
         fs.appendFileSync(path.join(STATE_DIR, "postusetool.debug.log"), debugLine);
       } catch {}
