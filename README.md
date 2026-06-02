@@ -38,6 +38,8 @@ Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper ar
 | Skill `/mnotes:ask` | `/mnotes:ask` | Synthesized answer + cited sources (`mnotes kb ask`) |
 | Skill `/mnotes:ingest` | `/mnotes:ingest` | Batch upsert (up to 50) of knowledge entries from JSON |
 | Skill `/mnotes:graph` | `/mnotes:graph` | Graph exploration: neighbors / related / backlinks / paths |
+| Skill `/mnotes:facts` | `/mnotes:facts` | Bi-temporal fact graph: extract / list / traverse facts |
+| Skill `/mnotes:recall-at` | `/mnotes:recall-at` | Point-in-time recall: "what was true as of `<date>`" |
 | Skill `/mnotes:moc` | `/mnotes:moc` | Generate a Map of Content for a folder or tag |
 | Skill `/mnotes:session` | `/mnotes:session` | Log / replay / resume AI conversation sessions |
 | Skill `/mnotes:wiki` | `/mnotes:wiki` | Lint, refresh index, append to `wiki/log` |
