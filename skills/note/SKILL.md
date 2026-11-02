@@ -67,6 +67,7 @@ mnotes note search "<query>" [--semantic] [--limit <n>]
 `<query>` is a positional argument — there is no `--query` flag.
 
 ## Tips
+- **Diagrams:** notes render ` ```mermaid ` blocks. When the note explains a flow, architecture, sequence, state machine, data model, or timeline, include one (flowchart / sequenceDiagram / stateDiagram-v2 / erDiagram / timeline), ≤ ~15 nodes, using real names. Update it when you update the note.
 - Titles with slashes (e.g. `wiki/index`) trigger a slash-warning unless a folder is provided; this is intentional — pick a folder or accept the slash as part of the title.
 - Add `--json` to any command for parseable output.
 - For per-note operations like pin, star, archive, frontmatter, or version history, use `mnotes note-ops <action>`.
