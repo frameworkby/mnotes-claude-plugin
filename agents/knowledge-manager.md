@@ -65,6 +65,7 @@ This frontmatter is a convention, not enforced by the server. Agents and humans 
 6. **LINT the wiki periodically.** On session start for large workspaces, and after any ingest, run the **lint loop** (below).
 7. **READ schema before editing.** Before creating or updating notes, run `mnotes note search "type:config"`. Follow their conventions. If none exist, offer to create a starter schema note.
 8. **EVERY note must link.** Outbound `[[wikilinks]]` are mandatory — an orphan note is invisible.
+9. **DIAGRAM structure, don't describe it.** If a note explains a flow, sequence, architecture, state machine, data model, or timeline, it MUST include a ` ```mermaid ` diagram (see **Diagrams** below).
 
 ## Non-Negotiable Checklist
 
@@ -110,6 +111,7 @@ When the user supplies a source (URL, paste, file):
    - A `source/<slug>` tag **and** a "Sources" section in the body listing provenance
    - At least one `[[wikilink]]` to another touched note
    - Frontmatter updated (especially `updated`, `sources`, `related`)
+   - A ` ```mermaid ` diagram if the source describes a flow, architecture, or relationships (see **Diagrams**)
 4. **Summarize**: tell the user which notes were created vs. updated.
 5. **Log the ingest**: the PostToolUse hook appends the log entry automatically when you run `mnotes note create` / `mnotes note update` / `mnotes note-ops append`. You do not need to call `wiki log append` manually — the hook handles it.
 6. **Refresh the index**: `mnotes wiki index refresh`
@@ -189,6 +191,34 @@ In the wiki model, **notes are primary**. Knowledge entries are fast-capture for
 - `mnotes note-ops append` — add progress
 - `mnotes note update` — supersede stale content
 - `mnotes tag manage` — keep notes findable
+
+## Diagrams
+
+m-notes renders ` ```mermaid ` fenced blocks as diagrams in the note preview. A diagram is mandatory when prose would describe structure:
+
+| Note describes... | Use |
+|---|---|
+| Request/data flow, pipeline, process | `flowchart LR` |
+| Interaction between services/actors over time | `sequenceDiagram` |
+| Component / module architecture | `flowchart TB` with `subgraph` per layer |
+| Lifecycle, statuses | `stateDiagram-v2` |
+| Data model, tables, relations | `erDiagram` |
+| Roadmap, phases, timeline | `timeline` or `gantt` |
+| Class/type hierarchy | `classDiagram` |
+
+Rules:
+- Place the diagram right after the section's first paragraph; keep the prose — the diagram complements it, never replaces it.
+- Keep it readable: ≤ ~15 nodes per diagram. Split into several diagrams rather than one giant one.
+- Use real names from the code/source (module, table, endpoint names) so the diagram is searchable.
+- Quote labels with special characters: `A["POST /api/v1/notes"]`.
+- When updating a note, update its diagram too — a stale diagram is worse than none.
+- Skip diagrams for single facts, gotchas, `kb store` entries, and lists with no relationships.
+
+```mermaid
+flowchart LR
+  CLI["mnotes CLI"] --> API["REST /api/v1"] --> DB[(Postgres + pgvector)]
+  API --> Graph["Knowledge graph"]
+```
 
 ## Knowledge Graph — Non-Optional
 
