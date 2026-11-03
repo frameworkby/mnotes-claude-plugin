@@ -8,7 +8,7 @@
     {
       "name": "mnotes",
       "source": "./",
-      "description": "m-notes Claude Code plugin: knowledge base hooks, /mnotes:* skills covering store, recall, setup, search, note CRUD, ask, ingest, graph, graphify, moc, session, wiki, tasks, and snapshot, plus the knowledge-manager agent.",
+      "description": "m-notes Claude Code plugin: knowledge base and code-graph hooks, /mnotes:* skills covering store, recall, setup, search, note CRUD, ask, ingest, graph, graphify, code, moc, session, wiki, tasks, and snapshot, plus the knowledge-manager agent.",
       "homepage": "https://github.com/frameworkby/mnotes-claude-plugin",
       "repository": "https://github.com/frameworkby/mnotes-claude-plugin",
       "license": "MIT"

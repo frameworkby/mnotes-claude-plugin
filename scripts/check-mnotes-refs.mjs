@@ -4,6 +4,15 @@
 // Pinned CLI version — bump deliberately (PR-reviewable).
 const PINNED_CLI = "mnotes-cli@4.4.0";
 
+// Command groups that skills/agents may reference before the pinned CLI ships
+// them. Used only when the pinned CLI does NOT list the group; once PINNED_CLI
+// is bumped to a version that has it, the real CLI is checked instead and the
+// entry here becomes dead (delete it then).
+//   `mnotes code` — mnotes-cli 4.6.0 (code-graph story 2).
+const PENDING_GROUPS = {
+  code: { since: "4.6.0", subcommands: ["status", "search", "show", "impact", "refresh"] },
+};
+
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { execSync, spawnSync } from "node:child_process";
@@ -91,6 +100,13 @@ function ensureCliInstalled() {
   }
   // Always allow `help` even if commander doesn't list it.
   CLI_TOPLEVEL.add("help");
+  for (const [group, meta] of Object.entries(PENDING_GROUPS)) {
+    meta.cliHasIt = CLI_TOPLEVEL.has(group);
+    if (!meta.cliHasIt) {
+      CLI_TOPLEVEL.add(group);
+      console.log(`… \`mnotes ${group}\` not in ${PINNED_CLI}; validating against the pending list (CLI ${meta.since})`);
+    }
+  }
   return bin;
 }
 
@@ -181,6 +197,15 @@ function main() {
   const failures = [];
   for (const [key, sites] of byKey) {
     const path = key.split(" ");
+    const pending = PENDING_GROUPS[path[0]];
+    if (pending && pending.cliHasIt === false) {
+      if (path.length > 1 && !pending.subcommands.includes(path[1])) {
+        failures.push({ key, sites, reason: `\`${path[1]}\` is not a known subcommand of pending group \`mnotes ${path[0]}\` (CLI ${pending.since})` });
+      }
+      // Deeper tokens (args like `mnotes code show foo`) are not validated for
+      // pending groups; the real CLI will check them once pinned.
+      continue;
+    }
     const r = validatePath(bin, path);
     if (!r.ok) failures.push({ key, sites, reason: r.where });
   }

@@ -41,6 +41,19 @@ mnotes graph import "$OUT/graphify-out/graph.json" --name "$(basename "$PWD")" -
 
 Tell the user the node, edge and community counts and the build URL that the import printed (`/graph/builds/<id>`). The interactive viewer page ships in a later m-notes release, so the URL may not render yet.
 
+## Use the graph
+
+After the import, query the build with `mnotes code` (`/mnotes:code`):
+
+```bash
+mnotes code status
+mnotes code search <name>
+mnotes code show <name>
+mnotes code impact <file>
+```
+
+`mnotes code refresh` repeats steps 2 and 3 in one command, with the same build name, `--root`, `--commit` and `--replace`. `--if-stale` skips the work when the build is current. The plugin hooks run `mnotes code refresh --if-stale` in the background at session start and after `git commit` (turn this off with `MNOTES_CODE_AUTO_REFRESH=0`).
+
 ## Manage builds
 
 ```bash

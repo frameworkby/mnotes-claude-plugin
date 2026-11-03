@@ -39,13 +39,15 @@ Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper ar
 | Skill `/mnotes:ingest` | `/mnotes:ingest` | Batch upsert (up to 50) of knowledge entries from JSON |
 | Skill `/mnotes:graph` | `/mnotes:graph` | Graph exploration: neighbors / related / backlinks / paths |
 | Skill `/mnotes:graphify` | `/mnotes:graphify` | Build a code graph with graphify and import it (`mnotes graph import`) |
+| Skill `/mnotes:code` | `/mnotes:code` | Query the repo's code graph: `mnotes code status / search / show / impact / refresh` |
 | Skill `/mnotes:moc` | `/mnotes:moc` | Generate a Map of Content for a folder or tag |
 | Skill `/mnotes:session` | `/mnotes:session` | Log / replay / resume AI conversation sessions |
 | Skill `/mnotes:wiki` | `/mnotes:wiki` | Lint, refresh index, append to `wiki/log` |
 | Skill `/mnotes:tasks` | `/mnotes:tasks` | List / toggle tasks parsed from note checkboxes |
 | Skill `/mnotes:snapshot` | `/mnotes:snapshot` | Export KB, view stats, scan conflicts, decay/archive |
 | Agent `knowledge-manager` | Sub-agent | Full wiki management: ingest, recall, lint, session logging |
-| Hook `SessionStart` | Auto on session open | Runs `mnotes composite project-load` and injects context |
+| Hook `SessionStart` | Auto on session open | Runs `mnotes composite project-load` and `mnotes code status`, then injects context; see [Code-graph hooks](#code-graph-hooks) |
+| Hook `PreToolUse` | Before Edit / Write / MultiEdit / NotebookEdit / Grep / Glob | Injects the dependents of the file being edited; nudges Grep/Glob toward `mnotes code search`; see [Code-graph hooks](#code-graph-hooks) |
 | Hook `PostToolUse` | Auto after Bash / Read / Edit / Write tool calls | Auto-appends wiki log entries; see [PostToolUse hook](#posttooluse-hook) below |
 
 ---
@@ -87,6 +89,29 @@ node scripts/test-post-tool-use.mjs
 ```
 
 Runs the 34-case smoke test covering every tool family above, env-var extension, and the rate-cap invariant. Wired into CI (`.github/workflows/ci.yml`).
+
+---
+
+## Code-graph hooks
+
+These hooks steer the agent onto the repo's m-notes code graph (a graphify build, see `/mnotes:graphify`). They need `mnotes-cli` ≥ 4.6.0 for `mnotes code`, installed globally. The plugin's `npx` fallback wrapper is deliberately skipped because it is too slow for a hook. Every hook fails open and exits `0`. Each `mnotes` call has a 4 s timeout. When `mnotes` is missing, or the repo has no build, the hooks spawn nothing.
+
+| Event | Behaviour |
+|---|---|
+| `SessionStart` | Runs `mnotes code status --json` in parallel with project-load and appends a **Code graph** section: build name, commit, how far behind HEAD it is, and the rule to use `mnotes code search/show/impact` before broad Grep/Glob. With no build, it tells the agent to run `/mnotes:graphify`. If the build is stale and `graphify` is on PATH, it starts `mnotes code refresh --if-stale` detached. |
+| `PreToolUse` Edit / Write / MultiEdit / NotebookEdit | Runs `mnotes code impact <file> --depth 1 --json` and injects the top 15 dependent files as `additionalContext`, before the edit happens. It makes one call per file per session (cached), skips non-code files, files outside the repo, files that don't exist yet and files not in the graph, and stops after two failed calls in a session. It never makes a permission decision. |
+| `PreToolUse` Grep / Glob | The first time in a session, injects a one-line reminder about `mnotes code search`. In strict mode it denies Grep/Glob until a `mnotes code …` command has run. |
+| `PostToolUse` Bash | Records that `mnotes code …` ran, which unlocks strict mode. After `git commit`, it starts `mnotes code refresh --if-stale` detached when the repo has a build. `mnotes code` commands are not written to the wiki log. |
+
+Per-session state is kept in `<os temp dir>/mnotes-code-hooks/<session_id>/`. Background refreshes of one repo are throttled to one per 90 s.
+
+| Variable | Effect |
+|---|---|
+| `MNOTES_CODE_GRAPH=strict` | Deny Grep/Glob until a `mnotes code` command has run in the session. This applies only when the repo has a build. Off by default. |
+| `MNOTES_CODE_AUTO_REFRESH=0` | Never start background `mnotes code refresh --if-stale`, whether at session start or after commits. |
+| `MNOTES_CODE_BUILD` | Pin the build (`id` or name) that `mnotes code` uses, instead of the newest build named after the repo directory. This is read by the CLI. |
+
+Run the tests with `node scripts/test-code-graph-hooks.mjs`. They stub `mnotes` and `graphify` on PATH and are meant to run on Linux, macOS and Windows.
 
 ---
 
