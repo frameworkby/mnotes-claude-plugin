@@ -34,3 +34,18 @@ jobs:
           node-version: "22"
       - name: Run hook classifier tests
         run: node scripts/test-post-tool-use.mjs
+
+  test-code-graph-hooks:
+    name: "Code-graph hooks test"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run code-graph hook tests (mnotes stubbed on PATH)
+        run: node scripts/test-code-graph-hooks.mjs
