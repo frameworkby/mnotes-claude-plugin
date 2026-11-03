@@ -58,14 +58,15 @@ This frontmatter is a convention, not enforced by the server. Agents and humans 
 ## Rules (follow strictly)
 
 1. **ALWAYS recall before researching.** Before exploring the codebase or making assumptions — run `mnotes kb recall` and `mnotes note search`. Past you already figured things out.
-2. **ALWAYS store what you learn.** Non-obvious discoveries → `mnotes kb store` immediately. Anything worth re-finding belongs in the wiki.
-3. **LOG MEANINGFUL SESSIONS.** Run `mnotes session log --summary "..."` before ending — only when real work happened, and only with a real summary (decisions, actions, or a concrete outcome). Skip the log for trivial / read-only sessions; never call `session log` with a stub summary like "Session ended".
-4. **ALWAYS load context at session start.** Run `mnotes composite project-load`. Use `mnotes session resume` if mid-conversation.
-5. **INGEST sources coherently.** When the user drops a URL, long paste, or file: don't just dump it into one note. Run the **ingest loop** (below).
-6. **LINT the wiki periodically.** On session start for large workspaces, and after any ingest, run the **lint loop** (below).
-7. **READ schema before editing.** Before creating or updating notes, run `mnotes note search "type:config"`. Follow their conventions. If none exist, offer to create a starter schema note.
-8. **EVERY note must link.** Outbound `[[wikilinks]]` are mandatory — an orphan note is invisible.
-9. **DIAGRAM structure, don't describe it.** If a note explains a flow, sequence, architecture, state machine, data model, or timeline, it MUST include a ` ```mermaid ` diagram (see **Diagrams** below).
+2. **ASK THE CODE GRAPH before exploring code.** In a repo with a graphify build (see the "Code graph" section injected at session start), use `mnotes code search` / `mnotes code show` for "where is X / who uses X" before broad Grep/Glob, and run `mnotes code impact <file>` before editing a file. See **Code Graph** below.
+3. **ALWAYS store what you learn.** Non-obvious discoveries → `mnotes kb store` immediately. Anything worth re-finding belongs in the wiki.
+4. **LOG MEANINGFUL SESSIONS.** Run `mnotes session log --summary "..."` before ending — only when real work happened, and only with a real summary (decisions, actions, or a concrete outcome). Skip the log for trivial / read-only sessions; never call `session log` with a stub summary like "Session ended".
+5. **ALWAYS load context at session start.** Run `mnotes composite project-load`. Use `mnotes session resume` if mid-conversation.
+6. **INGEST sources coherently.** When the user drops a URL, long paste, or file: don't just dump it into one note. Run the **ingest loop** (below).
+7. **LINT the wiki periodically.** On session start for large workspaces, and after any ingest, run the **lint loop** (below).
+8. **READ schema before editing.** Before creating or updating notes, run `mnotes note search "type:config"`. Follow their conventions. If none exist, offer to create a starter schema note.
+9. **EVERY note must link.** Outbound `[[wikilinks]]` are mandatory — an orphan note is invisible.
+10. **DIAGRAM structure, don't describe it.** If a note explains a flow, sequence, architecture, state machine, data model, or timeline, it MUST include a ` ```mermaid ` diagram (see **Diagrams** below).
 
 ## Non-Negotiable Checklist
 
@@ -75,6 +76,7 @@ These are not suggestions. Skip any step and the wiki degrades.
 - [ ] Run `mnotes wiki log tail --limit 10` — see recent ingest/lint/decision activity before anything else
 - [ ] Read the Wiki Index: `mnotes note-ops by-title --title "Wiki Index"` — find relevant pages and drill in before falling back to search
 - [ ] Run `mnotes composite project-load`
+- [ ] In a code repo: check the "Code graph" section from session start (or run `mnotes code status`). If there is no build, suggest `/mnotes:graphify`
 - [ ] Run `mnotes kb recall --query "<topic>"` — past you already figured things out
 - [ ] Run `mnotes note search "<topic>"` for related wiki pages
 - [ ] If the graph is empty, run `mnotes graph populate` (idempotent)
@@ -248,6 +250,20 @@ mnotes graph create-node --label "Auth Module" --node-type concept
 mnotes graph create-node --label "PostgreSQL" --node-type concept
 mnotes graph create-edge --source-id <authNodeId> --target-id <pgNodeId> --edge-type related
 ```
+
+## Code Graph
+
+The notes graph above holds knowledge. The **code graph** is a separate graphify build of the repo's files and symbols, with their imports and calls; `/mnotes:graphify` creates it. Query it with `mnotes code`:
+
+| Command | When to use |
+|---------|------------|
+| `mnotes code status` | Is there a build, and how far behind HEAD is it? |
+| `mnotes code search <name>` | Where is a symbol or file? Use this before Grep/Glob for structural questions |
+| `mnotes code show <name>` | Location, snippet, callers, callees and linked notes |
+| `mnotes code impact <file>` | Who depends on this file? Run it before editing |
+| `mnotes code refresh --if-stale` | Rebuild after changes (needs `graphify`) |
+
+When an investigation explains a module, store it as a note. The graph links notes that mention code to the matching code nodes, and they show up under "linked notes" in `mnotes code show`.
 
 ## CLI Commands Reference
 

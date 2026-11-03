@@ -13,6 +13,14 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import {
+  STATUS_KEY,
+  cacheGet,
+  findRepoRoot,
+  firstTime,
+  maybeBackgroundRefresh,
+  resolveMnotesAny,
+} from "./lib/code-graph.mjs";
 
 const STATE_DIR = path.join(os.homedir(), ".claude", "plugins", "mnotes", "state");
 
@@ -107,6 +115,8 @@ function classify(payload) {
     const cmdTrim = (command || "").replace(/^\s+/, "");
 
     if (/^mnotes\s/.test(cmdTrim)) {
+      // Code-graph lookups are navigation, not knowledge events — don't log them.
+      if (/^mnotes\s+code(\s|$)/.test(cmdTrim)) return null;
       // ── Legacy mnotes classifier ───────────────────────────────────────────
       if (/(note\s+create|note\s+update|note-ops\s+append)/.test(command)) {
         let ref = extractFlag(command, "--title");
@@ -173,6 +183,30 @@ function classify(payload) {
   }
 
   return null;
+}
+
+// `mnotes code …` anywhere in the command line (also after `cd x &&` etc.).
+const MNOTES_CODE_RE = /(^|[;&|(]\s*|\s)mnotes\s+code(\s|$)/;
+// `git commit` anywhere in the command line, including `git -C dir commit`.
+const GIT_COMMIT_RE = /(^|[;&|(]\s*)git\s+(?:-C\s+\S+\s+)?commit(\s|$)/;
+
+// Code-graph side effects for Bash calls. Independent of wiki logging.
+function codeGraphOnBash(payload) {
+  if (payload.tool_name !== "Bash") return;
+  const command = (payload.tool_input && payload.tool_input.command) || "";
+  if (!command) return;
+  const sid = payload.session_id;
+  if (MNOTES_CODE_RE.test(command)) {
+    // Unlocks Grep/Glob under MNOTES_CODE_GRAPH=strict (see mnotes-pre-tool-use.mjs).
+    firstTime(sid, "used-code");
+  }
+  if (GIT_COMMIT_RE.test(command)) {
+    const status = cacheGet(sid, STATUS_KEY);
+    // Only refresh repos that already have a build; never create one unasked.
+    if (!status || status.state !== "build") return;
+    const root = status.repoRoot || findRepoRoot(payload.cwd || process.cwd());
+    maybeBackgroundRefresh(root);
+  }
 }
 
 function dedupCheck(kind, ref) {
@@ -294,6 +328,10 @@ function buildSummary(stdout, toolName, ref) {
       process.exit(0);
     }
 
+    try {
+      codeGraphOnBash(payload);
+    } catch {}
+
     const cls = classify(payload);
     if (!cls) process.exit(0);
 
@@ -315,11 +353,13 @@ function buildSummary(stdout, toolName, ref) {
     // directly (`mnotes.cmd` on Windows, `mnotes` elsewhere) with shell:false so
     // args are passed verbatim — no shell metacharacter interpretation.
     try {
-      const executable = process.platform === "win32" ? "mnotes.cmd" : "mnotes";
+      // On Windows the .cmd shim is unwrapped to `node <entry>`: current Node
+      // refuses to spawn .cmd files with shell:false (EINVAL).
+      const bin = resolveMnotesAny();
       const child = spawn(
-        executable,
-        ["wiki", "log", "append", "--kind", kind, "--ref", ref, "--summary", summary],
-        { stdio: "ignore", shell: false, detached: false },
+        bin.cmd,
+        [...bin.prefix, "wiki", "log", "append", "--kind", kind, "--ref", ref, "--summary", summary],
+        { stdio: "ignore", shell: false, detached: false, windowsHide: true },
       );
       child.on("error", () => {});
       child.unref();

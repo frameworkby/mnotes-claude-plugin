@@ -6,7 +6,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/mnotes-session-start.mjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/mnotes-session-start.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/mnotes-pre-tool-use.mjs\"",
+            "timeout": 10
           }
         ]
       }
