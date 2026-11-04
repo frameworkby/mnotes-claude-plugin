@@ -10,12 +10,13 @@ Run `mnotes kb ask` via Bash. Returns an answer with a confidence score and supp
 ## Command
 
 ```bash
-mnotes kb ask --question "<natural language question>" [--limit <n>]
+mnotes kb ask --question "<natural language question>" [--limit <n>] [--context-only]
 ```
 
 ## Parameters
 - **--question** (required): The full question. Phrase it naturally, including project context.
 - **--limit**: Max sources to consider (default server-side).
+- **--context-only**: Return the retrieved context, sources and evidence without generating an answer (no LLM call). Use it to inspect what the answer would be based on, or to answer from the context yourself.
 
 ## Output
 
@@ -25,7 +26,11 @@ JSON shape (when `--json`):
 {
   "answer": "…",
   "confidence": 0.0,
-  "sources": [ { "noteId": "…", "title": "…", "excerpt": "…" } ]
+  "sources": [ { "noteId": "…", "title": "…", "excerpt": "…" } ],
+  "evidence": {
+    "chunks": [ { "id": "noteId#0", "noteId": "…", "chunkIndex": 0, "score": 0.0 } ],
+    "nodes": [ { "id": "…", "noteId": "…", "label": "…" } ]
+  }
 }
 ```
 
