@@ -135,7 +135,7 @@ Questions answered and not filed are knowledge lost.
 
 Periodically (session start on large workspaces; after ingests):
 
-- **Contradictions** → run `mnotes kb scan-conflicts`. Resolve, don't stack.
+- **Contradictions** → run `mnotes kb scan-conflicts`. Resolve, don't stack: when a newer entry replaces an older one, `mnotes kb supersede --key <old> --by <new>` hides the old one from recall and ask (undo with `--clear`).
 - **Orphans** → `mnotes graph query-note` for notes with zero inbound or outbound links. Link them or delete.
 - **Broken wikilinks** → `[[X]]` targets that don't exist. Create a stub note or fix the link.
 - **Stale** → notes untouched >90 days referenced by new sources. Update them.
@@ -284,6 +284,7 @@ Workspace is resolved automatically from env/config. No `--workspace-id` flag re
 | `mnotes bulk knowledge-recall --tag-pattern "arch/*"` | Recall by tag pattern |
 | `mnotes kb snapshot` | Export all knowledge |
 | `mnotes kb scan-conflicts` | Lint: find contradictions |
+| `mnotes kb supersede --key <old> --by <new>` | Mark an outdated entry as replaced (`--clear` to undo) |
 
 ### Notes (wiki pages)
 | Command | When to use |
