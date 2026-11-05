@@ -2,7 +2,7 @@
 // Smoke-test every `mnotes <cmd>` reference in skills/ + agents/ against the real CLI.
 //
 // Pinned CLI version — bump deliberately (PR-reviewable).
-const PINNED_CLI = "mnotes-cli@4.8.0";
+const PINNED_CLI = "mnotes-cli@4.9.0";
 
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
