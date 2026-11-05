@@ -25,11 +25,13 @@ JSON shape (when `--json`):
 ```json
 {
   "answer": "…",
+  "answerId": "…",
   "confidence": 0.0,
   "sources": [ { "noteId": "…", "title": "…", "excerpt": "…" } ],
   "evidence": {
     "chunks": [ { "id": "noteId#0", "noteId": "…", "chunkIndex": 0, "score": 0.0 } ],
-    "nodes": [ { "id": "…", "noteId": "…", "label": "…" } ]
+    "nodes": [ { "id": "…", "noteId": "…", "label": "…" } ],
+    "edges": [ { "id": "…", "edgeType": "wikilink", "sourceId": "…", "targetId": "…" } ]
   }
 }
 ```
@@ -38,3 +40,12 @@ JSON shape (when `--json`):
 - For a ranked list of matching notes without synthesis, use `/mnotes:search` (full-text/semantic) or `/mnotes:recall` (knowledge entries).
 - If confidence is low, broaden the question or ingest more context first via `/mnotes:ingest`.
 - Always relay the cited `sources` to the user so they can verify the answer.
+- Sources with `via` / `linkedFrom` are graph neighbours of a direct match, not direct matches.
+
+## Feedback
+
+When the user says an answer was right or wrong, rate it so later answers rank its notes accordingly (re-rating replaces the previous rating):
+
+```bash
+mnotes kb feedback <answerId> --rating up|down|clear [--comment "<why>"]
+```
