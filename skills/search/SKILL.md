@@ -21,6 +21,8 @@ mnotes search "<query>" [--semantic]
 
 Returns a ranked list of `{ id, title, snippet, score }` results. Add `--json` for machine-readable output.
 
+Output may end with a **Related tasks** footer (with `--json`: `{ results, relatedTasks }`): existing board tasks tied to the result notes or matching the query. Before creating a board task, check these — if one matches, pick it up (`mnotes board move <id> in_progress`, `mnotes board update <id> --assignee claude-code`, `mnotes board comment <id> "…"`) instead of creating a duplicate.
+
 ## Tips
 - If the user wants notes filtered by tag, use `mnotes folder search-tags --tags "<csv>"` instead.
 - To recall stored knowledge entries by key, use `/mnotes:recall`.

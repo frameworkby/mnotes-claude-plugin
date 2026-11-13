@@ -66,6 +66,8 @@ mnotes note search "<query>" [--semantic] [--limit <n>]
 
 `<query>` is a positional argument — there is no `--query` flag.
 
+Output may end with a **Related tasks** footer (`relatedTasks` in `--json`): existing board tasks tied to the result notes or matching the query. Before creating a board task, check these — if one matches, pick it up (`mnotes board move <id> in_progress`, `mnotes board update <id> --assignee claude-code`, `mnotes board comment <id> "…"`) instead of creating a duplicate.
+
 ## Tips
 - **Diagrams:** notes render ` ```mermaid ` blocks. When the note explains a flow, architecture, sequence, state machine, data model, or timeline, include one (flowchart / sequenceDiagram / stateDiagram-v2 / erDiagram / timeline), ≤ ~15 nodes, using real names. Update it when you update the note.
 - Titles with slashes (e.g. `wiki/index`) trigger a slash-warning unless a folder is provided; this is intentional — pick a folder or accept the slash as part of the title.

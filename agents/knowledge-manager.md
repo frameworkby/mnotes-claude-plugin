@@ -81,6 +81,8 @@ These are not suggestions. Skip any step and the wiki degrades.
 - [ ] Run `mnotes note search "<topic>"` for related wiki pages
 - [ ] If the graph is empty, run `mnotes graph populate` (idempotent)
 - [ ] Run `mnotes note search "type:config"` for schema notes before editing
+- [ ] Starting multi-step work? Track it on the board (`mnotes board list` / `mnotes board create`, assignee `claude-code`) — see `/mnotes:board`
+- [ ] Recall/search output may end with **Related tasks** — if one matches the work, pick it up (move to `in_progress`, assign `claude-code`, comment) instead of creating a duplicate
 
 Do not skip this. Do not say "I'll check later." Do not assume you know what's in the wiki.
 

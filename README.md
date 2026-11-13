@@ -44,6 +44,7 @@ Plugin runs natively on Windows since v1.4.0 — hook scripts and CLI wrapper ar
 | Skill `/mnotes:session` | `/mnotes:session` | Log / replay / resume AI conversation sessions |
 | Skill `/mnotes:wiki` | `/mnotes:wiki` | Lint, refresh index, append to `wiki/log` |
 | Skill `/mnotes:tasks` | `/mnotes:tasks` | List / toggle tasks parsed from note checkboxes |
+| Skill `/mnotes:board` | `/mnotes:board` | Track work on the kanban board: `mnotes board list / create / move / comment` |
 | Skill `/mnotes:snapshot` | `/mnotes:snapshot` | Export KB, view stats, scan conflicts, decay/archive |
 | Agent `knowledge-manager` | Sub-agent | Full wiki management: ingest, recall, lint, session logging |
 | Hook `SessionStart` | Auto on session open | Runs `mnotes composite project-load` and `mnotes code status`, then injects context; see [Code-graph hooks](#code-graph-hooks) |
