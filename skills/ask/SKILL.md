@@ -36,6 +36,8 @@ JSON shape (when `--json`):
 }
 ```
 
+The JSON output includes a `relatedTasks` list (no footer): existing board tasks tied to the result notes or matching the query. Before creating a board task, check these — if one matches, pick it up (`mnotes board move <id> in_progress`, `mnotes board update <id> --assignee claude-code`, `mnotes board comment <id> "…"`) instead of creating a duplicate.
+
 ## Tips
 - For a ranked list of matching notes without synthesis, use `/mnotes:search` (full-text/semantic) or `/mnotes:recall` (knowledge entries).
 - If confidence is low, broaden the question or ingest more context first via `/mnotes:ingest`.

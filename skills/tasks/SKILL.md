@@ -1,6 +1,6 @@
 ---
 name: tasks
-description: List or toggle tasks parsed from m-notes notes (markdown checkboxes). Use when the user says /tasks or asks for open todos, action items from notes, or wants to check off a task.
+description: List or toggle tasks parsed from m-notes notes (markdown checkboxes). Use when the user says /tasks or asks for open todos, action items from notes, or wants to check off a task. For tracked work items (kanban), use the board skill instead.
 ---
 
 # Tasks from m-notes Notes
